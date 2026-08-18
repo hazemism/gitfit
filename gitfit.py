@@ -1,4 +1,6 @@
 import os
+import hashlib 
+import zlib
 
 def write_file (path,data):
     with open (path,'wb') as wf:
@@ -16,4 +18,16 @@ def init (repo) :
     print ("initialized empty repo {}".format(repo))
 
 
+def hash_object (data, type, write=True):
+     size = len(data)
+     header = '{} {}'.format(type,size).encode()
+     full_data = header + b'\x00' + data
+     sha1 = hashlib.sha1(full_data).hexdigest()
 
+     if write :
+        path = os.path.join('.git', 'objects',sha1[:2],sha1[2:])
+        if not os.path.exists(path):
+             os.makedirs(os.path.dirname(path),exist_ok=True)
+             write_file = (path, zlib.compress(full_data))
+
+     return sha1
