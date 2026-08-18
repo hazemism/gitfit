@@ -1,7 +1,6 @@
-import os
-import hashlib 
-import zlib
+import os,hashlib,zlib 
 
+#low level functions
 def write_file (path,data):
     with open (path,'wb') as wf:
         wf.write(data)
@@ -17,7 +16,7 @@ def init (repo) :
 
     print ("initialized empty repo {}".format(repo))
 
-
+#Object storage layer
 def hash_object (data, type, write=True):
      size = len(data)
      header = '{} {}'.format(type,size).encode()
