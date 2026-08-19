@@ -9,6 +9,10 @@ class object (enum.ob):
 def write_file (path,data):
     with open (path,'wb') as wf:
         wf.write(data)
+    
+def read_file (path):
+     with open (path,'rb') as rf:
+      return rf.read()         
 
 def init (repo) :
     os.mkdir(repo)
