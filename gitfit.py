@@ -38,3 +38,20 @@ def hash_object (data, type, write=True):
              write_file = (path, zlib.compress(full_data))
 
      return sha1
+
+def find_object(sha1_prefix):
+    if len(sha1_prefix) < 2:
+        raise ValueError("error")
+    obj_dir = os.path.join('.git', 'objects', sha1_prefix[:2])
+    rest = sha1_prefix[2:]
+    filename = os.listdir(obj_dir)
+    objects = []
+    for file in filename:
+        if file.startswith(rest):
+            objects.append(file)
+    if not object:
+        raise ValueError ("object not fount")
+    if len(object)>=2:
+        raise ValueError ('multiple objects ({}) with {}'.format(len(object),sha1_prefix))
+    return os.path.join(obj_dir,object[0])
+
