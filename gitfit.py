@@ -1,10 +1,14 @@
-import os,hashlib,zlib 
+import os,hashlib,zlib,enum
+
+class object (enum.ob):
+    commit = 1
+    tree = 2
+    blob = 3
 
 #low level functions
 def write_file (path,data):
     with open (path,'wb') as wf:
         wf.write(data)
-
 
 def init (repo) :
     os.mkdir(repo)
