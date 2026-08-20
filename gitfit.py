@@ -25,9 +25,9 @@ def init (repo) :
     print ("initialized empty repo {}".format(repo))
 
 #Object storage layer
-def hash_object (data, type, write=True):
-     size = len(data)
-     header = '{} {}'.format(type,size).encode()
+def hash_object (data, type_obj, write=True):
+     size_obj = len(data)
+     header = '{} {}'.format(type_obj,size_obj).encode()
      full_data = header + b'\x00' + data
      sha1 = hashlib.sha1(full_data).hexdigest()
 
