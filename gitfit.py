@@ -55,3 +55,14 @@ def find_object(sha1_prefix):
         raise ValueError ('multiple objects ({}) with {}'.format(len(object),sha1_prefix))
     return os.path.join(obj_dir,object[0])
 
+def read_object(sha1):
+    path = find_object(sha1)
+    if not path:
+        raise ValueError('error')
+    full_data = zlib.decompress(read_file(path))
+    null = full_data.index(b'\x00') 
+    header = full_data[:null] 
+    type_obj,size_obj = header.decode().split()
+    data = full_data[null+1:]
+    assert size_obj == len(data),'execute size {}, got {}'.format(size_obj,len(data))
+    return type_obj,data
