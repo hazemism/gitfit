@@ -1,6 +1,6 @@
 import os,hashlib,zlib,enum
 
-class object (enum.ob):
+class object (enum.Enum):
     commit = 1
     tree = 2
     blob = 3
@@ -14,15 +14,11 @@ def read_file (path):
      with open (path,'rb') as rf:
       return rf.read()         
 
-def init (repo) :
-    os.mkdir(repo)
-    os.mkdir(os.path.join(repo,'.git'))
+def init () :
+    os.mkdir(os.path.join('.git'))
     for file in ['objects','refs','refs/heads']:
-           os.mkdir(os.path.join(repo,'.git',file))
-
-    write_file(os.path.join(repo,'.git','HEAD'),b'ref: refs/heads/master')
-
-    print ("initialized empty repo {}".format(repo))
+           os.mkdir(os.path.join('.git',file))
+    write_file(os.path.join('.git','HEAD'),b'ref: refs/heads/master')
 
 #Object storage layer
 def hash_object (data, type_obj, write=True):
@@ -30,13 +26,11 @@ def hash_object (data, type_obj, write=True):
      header = '{} {}'.format(type_obj,size_obj).encode()
      full_data = header + b'\x00' + data
      sha1 = hashlib.sha1(full_data).hexdigest()
-
      if write :
         path = os.path.join('.git', 'objects',sha1[:2],sha1[2:])
         if not os.path.exists(path):
              os.makedirs(os.path.dirname(path),exist_ok=True)
-             write_file = (path, zlib.compress(full_data))
-
+             write_file(path, zlib.compress(full_data))
      return sha1
 
 def find_object(sha1_prefix):
@@ -51,9 +45,9 @@ def find_object(sha1_prefix):
             objects.append(file)
     if not object:
         raise ValueError ("object not fount")
-    if len(object)>=2:
-        raise ValueError ('multiple objects ({}) with {}'.format(len(object),sha1_prefix))
-    return os.path.join(obj_dir,object[0])
+    if len(objects)>=2:
+        raise ValueError ('multiple objects ({}) with {}'.format(len(objects),sha1_prefix))
+    return os.path.join(obj_dir,objects[0])
 
 def read_object(sha1):
     path = find_object(sha1)
@@ -64,5 +58,7 @@ def read_object(sha1):
     header = full_data[:null] 
     type_obj,size_obj = header.decode().split()
     data = full_data[null+1:]
-    assert size_obj == len(data),'execute size {}, got {}'.format(size_obj,len(data))
+    if (size_obj == len(data)):
+        print('execute size {}, got {}'.format(size_obj,len(data)))
+        return
     return type_obj,data
