@@ -1,4 +1,4 @@
-import os,hashlib,zlib,enum
+import os,hashlib,zlib,enum,struct,collections
 
 class object (enum.Enum):
     commit = 1
@@ -43,8 +43,8 @@ def find_object(sha1_prefix):
     for file in filename:
         if file.startswith(rest):
             objects.append(file)
-    if not object:
-        raise ValueError ("object not fount")
+    if not objects:
+        raise ValueError ("object not found")
     if len(objects)>=2:
         raise ValueError ('multiple objects ({}) with {}'.format(len(objects),sha1_prefix))
     return os.path.join(obj_dir,objects[0])
@@ -62,3 +62,38 @@ def read_object(sha1):
         print('execute size {}, got {}'.format(size_obj,len(data)))
         return
     return type_obj,data
+
+IndexEntry = collections.namedtuple('IndexEntry', [
+    'ctime_s', 'ctime_n', 'mtime_s', 'mtime_n', 'dev', 'ino', 'mode',
+    'uid', 'gid', 'size', 'sha1', 'flags', 'path',
+])
+
+def read_index ():
+    try:
+       path = os.path.join('git','index')
+       data = read_file(path)
+    except FileNotFoundError:
+        return []
+    checksum_data = data [:-20]
+    checksum      = data [-20:]
+    digest = hashlib.sha1(checksum_data).digest()
+    assert digest == checksum
+    signature, version, num_entries = struct.unpack('!4s2L', checksum_data[:12])
+    assert signature == b'DIRC'
+    assert version == 2
+
+    entry_data = checksum_data [12:]
+    entries = []
+    pos = 0
+
+    while pos + 62 < (len(entry_data)):
+          fields_end = pos + 62
+          fields = struct.unpack('!10L20s1H',entry_data[pos:fields_end])
+          null_pos = entry_data.index(b'\x00',fields_end)
+          path = entry_data[fields_end:null_pos]
+          entry = IndexEntry(*(fields + (path.decode(),)))
+          entries.append(entry)
+          entry_len = ((62 + len(path) + 1 + 7)//8) * 8
+          pos += entry_len
+    assert len(entries) == num_entries
+    return entries
